@@ -1,0 +1,11 @@
+# Worktrees
+.worktrees/
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+
+# macOS
+.DS_Store
