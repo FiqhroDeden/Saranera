@@ -109,6 +109,21 @@ struct FocusViewModelTests {
 
     // MARK: - Skip
 
+    @Test func skipBreakAdvancesToNextFocusSession() async {
+        let vm = makeViewModel()
+        vm.focusDuration = 1
+        vm.shortBreakDuration = 300
+        vm.sessionsBeforeLongBreak = 4
+        vm.startPomodoro()
+        try? await Task.sleep(for: .milliseconds(50))
+        if vm.timerState == .shortBreak {
+            let sessionBefore = vm.currentSession
+            vm.skip()
+            #expect(vm.timerState == .focusing)
+            #expect(vm.currentSession == sessionBefore + 1)
+        }
+    }
+
     @Test func skipDoesNothingDuringFocus() async {
         let vm = FocusViewModel(clock: ContinuousTimerClock())
         vm.focusDuration = 60

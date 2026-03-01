@@ -12,8 +12,8 @@ struct FocusView: View {
             // Background gradient
             LinearGradient(
                 colors: [
-                    Color(red: 0.051, green: 0.106, blue: 0.165),
-                    Color(red: 0.078, green: 0.145, blue: 0.235)
+                    .deepNavy,
+                    .darkNavy
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -56,7 +56,7 @@ struct FocusView: View {
             SoundPickerView()
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
-                .presentationBackground(Color(red: 0.051, green: 0.106, blue: 0.165))
+                .presentationBackground(Color.deepNavy)
         }
         .onChange(of: viewModel.timerState) { oldState, newState in
             handleStateChange(from: oldState, to: newState)
@@ -70,7 +70,7 @@ struct FocusView: View {
         VStack(spacing: 24) {
             Image(systemName: "brain.head.profile")
                 .font(.system(size: 48, weight: .light))
-                .foregroundStyle(Color(red: 0.357, green: 0.608, blue: 0.835))
+                .foregroundStyle(Color.softBlue)
 
             Button {
                 viewModel.startPomodoro()
@@ -95,7 +95,7 @@ struct FocusView: View {
         VStack(spacing: 24) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 64, weight: .light))
-                .foregroundStyle(Color(red: 0.357, green: 0.608, blue: 0.835))
+                .foregroundStyle(Color.softBlue)
 
             Text("Session Complete")
                 .font(.system(.title2, design: .rounded, weight: .medium))
@@ -188,6 +188,10 @@ struct FocusView: View {
             audioManager.pauseAll()
         case .completed:
             viewModel.saveSession(to: modelContext)
+            viewModel.loadTodayStats(from: modelContext)
+            if audioManager.isSuspended {
+                audioManager.resumeAll()
+            }
         case .idle:
             break
         }

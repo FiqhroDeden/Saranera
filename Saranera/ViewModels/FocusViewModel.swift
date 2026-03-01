@@ -84,6 +84,7 @@ final class FocusViewModel {
     // MARK: - Actions
 
     func startPomodoro() {
+        guard timerState == .idle || timerState == .completed else { return }
         currentSession = 1
         totalFocusSecondsAccumulated = 0
         isPaused = false
@@ -141,13 +142,17 @@ final class FocusViewModel {
             longBreakDuration: Int(longBreakDuration / 60)
         )
         context.insert(session)
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            print("FocusViewModel: Failed to save session: \(error)")
+        }
     }
 
     func loadTodayStats(from context: ModelContext) {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: Date())
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else { return }
 
         var descriptor = FetchDescriptor<FocusSession>(
             predicate: #Predicate<FocusSession> { session in
