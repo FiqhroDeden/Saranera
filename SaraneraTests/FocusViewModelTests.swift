@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import Saranera
 
@@ -146,5 +147,21 @@ struct FocusViewModelTests {
 
         #expect(vm.timerState == .completed)
         #expect(vm.currentSession == 3)
+    }
+
+    // MARK: - FocusSession Model
+
+    @Test func focusSessionModelCreation() {
+        let session = FocusSession(
+            date: Date(),
+            focusMinutes: 25,
+            sessionsCompleted: 4,
+            focusDuration: 25,
+            shortBreakDuration: 5,
+            longBreakDuration: 15
+        )
+        #expect(session.focusMinutes == 25)
+        #expect(session.sessionsCompleted == 4)
+        #expect(session.focusDuration == 25)
     }
 }

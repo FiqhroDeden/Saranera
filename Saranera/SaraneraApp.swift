@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct SaraneraApp: App {
@@ -7,5 +8,6 @@ struct SaraneraApp: App {
             ContentView()
                 .environment(AudioManager.shared)
         }
+        .modelContainer(for: FocusSession.self)
     }
 }
