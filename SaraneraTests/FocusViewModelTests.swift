@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import Testing
 @testable import Saranera
 
@@ -163,5 +164,51 @@ struct FocusViewModelTests {
         #expect(session.focusMinutes == 25)
         #expect(session.sessionsCompleted == 4)
         #expect(session.focusDuration == 25)
+    }
+
+    // MARK: - Persistence
+
+    @Test func saveSessionCreatesRecord() async throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: FocusSession.self, configurations: config)
+        let context = ModelContext(container)
+
+        let vm = makeViewModel()
+        // Use 60s focus so focusMinutes rounds to 1 (guard requires > 0)
+        vm.focusDuration = 60
+        vm.shortBreakDuration = 1
+        vm.longBreakDuration = 1
+        vm.sessionsBeforeLongBreak = 1
+
+        vm.startPomodoro()
+        try? await Task.sleep(for: .milliseconds(50))
+
+        #expect(vm.timerState == .completed)
+
+        vm.saveSession(to: context)
+
+        let descriptor = FetchDescriptor<FocusSession>()
+        let sessions = try context.fetch(descriptor)
+        #expect(sessions.count == 1)
+        #expect(sessions[0].sessionsCompleted == 1)
+        #expect(sessions[0].focusMinutes == 1)
+    }
+
+    @Test func loadTodayStatsAggregatesCorrectly() async throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: FocusSession.self, configurations: config)
+        let context = ModelContext(container)
+
+        let session1 = FocusSession(date: Date(), focusMinutes: 25, sessionsCompleted: 4, focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15)
+        let session2 = FocusSession(date: Date(), focusMinutes: 50, sessionsCompleted: 4, focusDuration: 25, shortBreakDuration: 5, longBreakDuration: 15)
+        context.insert(session1)
+        context.insert(session2)
+        try context.save()
+
+        let vm = makeViewModel()
+        vm.loadTodayStats(from: context)
+
+        #expect(vm.totalFocusMinutesToday == 75)
+        #expect(vm.sessionsCompletedToday == 8)
     }
 }

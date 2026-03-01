@@ -1,7 +1,9 @@
+import SwiftData
 import SwiftUI
 
 struct FocusView: View {
     @Environment(AudioManager.self) private var audioManager
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel = FocusViewModel()
     @State private var showSoundPicker = false
 
@@ -59,6 +61,7 @@ struct FocusView: View {
         .onChange(of: viewModel.timerState) { oldState, newState in
             handleStateChange(from: oldState, to: newState)
         }
+        .onAppear { viewModel.loadTodayStats(from: modelContext) }
     }
 
     // MARK: - Idle View
@@ -157,6 +160,7 @@ struct FocusView: View {
                         .buttonStyle(.glass)
                     } else {
                         Button {
+                            viewModel.saveSession(to: modelContext)
                             viewModel.stop()
                         } label: {
                             Image(systemName: "stop.fill")
@@ -182,7 +186,9 @@ struct FocusView: View {
             }
         case .shortBreak, .longBreak:
             audioManager.pauseAll()
-        case .completed, .idle:
+        case .completed:
+            viewModel.saveSession(to: modelContext)
+        case .idle:
             break
         }
     }

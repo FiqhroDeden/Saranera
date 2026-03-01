@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftData
 
 enum FocusTimerState: Sendable, Equatable {
     case idle
@@ -36,6 +37,8 @@ final class FocusViewModel {
     private(set) var currentSession: Int = 0
     private(set) var totalFocusSecondsAccumulated: TimeInterval = 0
     private(set) var isPaused: Bool = false
+    private(set) var totalFocusMinutesToday: Int = 0
+    private(set) var sessionsCompletedToday: Int = 0
 
     // MARK: - Dependencies
 
@@ -120,6 +123,46 @@ final class FocusViewModel {
             timerTask = nil
         case .focusing, .idle, .completed:
             break // skip does nothing outside breaks
+        }
+    }
+
+    // MARK: - Persistence
+
+    func saveSession(to context: ModelContext) {
+        let focusMinutes = Int(totalFocusSecondsAccumulated / 60)
+        guard focusMinutes > 0 else { return }
+
+        let session = FocusSession(
+            date: Date(),
+            focusMinutes: focusMinutes,
+            sessionsCompleted: currentSession,
+            focusDuration: Int(focusDuration / 60),
+            shortBreakDuration: Int(shortBreakDuration / 60),
+            longBreakDuration: Int(longBreakDuration / 60)
+        )
+        context.insert(session)
+        try? context.save()
+    }
+
+    func loadTodayStats(from context: ModelContext) {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: Date())
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+
+        var descriptor = FetchDescriptor<FocusSession>(
+            predicate: #Predicate<FocusSession> { session in
+                session.date >= startOfDay && session.date < endOfDay
+            }
+        )
+        descriptor.fetchLimit = 100
+
+        do {
+            let sessions = try context.fetch(descriptor)
+            totalFocusMinutesToday = sessions.reduce(0) { $0 + $1.focusMinutes }
+            sessionsCompletedToday = sessions.reduce(0) { $0 + $1.sessionsCompleted }
+        } catch {
+            totalFocusMinutesToday = 0
+            sessionsCompletedToday = 0
         }
     }
 
