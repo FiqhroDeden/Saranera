@@ -1,14 +1,32 @@
 import SwiftUI
 
 struct LibraryView: View {
-    var body: some View {
-        ZStack {
-            Color(red: 0.051, green: 0.106, blue: 0.165)
-                .ignoresSafeArea()
+    @Environment(AudioManager.self) private var audioManager
 
-            Text("Library")
-                .font(.system(.largeTitle, design: .rounded, weight: .light))
-                .foregroundStyle(Color(red: 0.357, green: 0.608, blue: 0.835))
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(SoundCategory.allCases, id: \.self) { category in
+                    Section {
+                        let sounds = Sound.grouped[category] ?? []
+                        ForEach(sounds) { sound in
+                            SoundRowView(
+                                sound: sound,
+                                isActive: audioManager.isActive(sound)
+                            )
+                            .onTapGesture {
+                                audioManager.play(sound: sound)
+                            }
+                        }
+                    } header: {
+                        Label(category.displayName, systemImage: category.iconName)
+                            .font(.system(.headline, design: .rounded))
+                    }
+                }
+            }
+            .navigationTitle("Library")
+            .scrollContentBackground(.hidden)
+            .background(Color(red: 0.051, green: 0.106, blue: 0.165).ignoresSafeArea()) // Deep Navy
         }
     }
 }
