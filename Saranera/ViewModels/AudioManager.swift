@@ -54,6 +54,8 @@ final class AudioManager {
         }
     }
 
+    private(set) var isSuspended: Bool = false
+
     // MARK: - Public API
 
     func play(sound: Sound) {
@@ -119,6 +121,22 @@ final class AudioManager {
             if let sound = Sound.catalog.first(where: { $0.id == id }) {
                 stop(sound: sound)
             }
+        }
+    }
+
+    func pauseAll() {
+        isSuspended = true
+        guard audioEnabled else { return }
+        for id in activeSoundIDs {
+            playerNodes[id]?.pause()
+        }
+    }
+
+    func resumeAll() {
+        isSuspended = false
+        guard audioEnabled else { return }
+        for id in activeSoundIDs {
+            playerNodes[id]?.play()
         }
     }
 

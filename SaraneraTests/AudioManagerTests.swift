@@ -107,4 +107,25 @@ struct AudioManagerTests {
         manager.stop(sound: rain)
         #expect(!manager.isActive(rain))
     }
+
+    // MARK: - Pause / Resume All
+
+    @Test func pauseAllKeepsSoundsInActiveSet() async {
+        let manager = makeManager()
+        manager.play(sound: rain)
+        manager.play(sound: thunder)
+        manager.pauseAll()
+        #expect(manager.activeSoundIDs.count == 2)
+        #expect(manager.isSuspended == true)
+    }
+
+    @Test func resumeAllRestoresPlayback() async {
+        let manager = makeManager()
+        manager.play(sound: rain)
+        manager.pauseAll()
+        #expect(manager.isSuspended == true)
+        manager.resumeAll()
+        #expect(manager.isSuspended == false)
+        #expect(manager.isActive(rain))
+    }
 }
