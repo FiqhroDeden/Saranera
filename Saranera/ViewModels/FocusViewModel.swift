@@ -77,4 +77,119 @@ final class FocusViewModel {
         case .idle, .completed: return 0
         }
     }
+
+    // MARK: - Actions
+
+    func startPomodoro() {
+        currentSession = 1
+        totalFocusSecondsAccumulated = 0
+        isPaused = false
+        transitionTo(.focusing)
+    }
+
+    func pause() {
+        guard isTimerActive, !isPaused else { return }
+        isPaused = true
+        timerTask?.cancel()
+        timerTask = nil
+    }
+
+    func resume() {
+        guard isTimerActive, isPaused else { return }
+        isPaused = false
+        startTicking()
+    }
+
+    func stop() {
+        timerTask?.cancel()
+        timerTask = nil
+        timerState = .idle
+        timeRemaining = 0
+        currentSession = 0
+        isPaused = false
+    }
+
+    func skip() {
+        switch timerState {
+        case .shortBreak:
+            currentSession += 1
+            transitionTo(.focusing)
+        case .longBreak:
+            timerState = .completed
+            timerTask?.cancel()
+            timerTask = nil
+        case .focusing, .idle, .completed:
+            break // skip does nothing outside breaks
+        }
+    }
+
+    // MARK: - Timer Engine
+
+    private func transitionTo(_ state: FocusTimerState) {
+        timerState = state
+        switch state {
+        case .focusing:
+            timeRemaining = focusDuration
+            startTicking()
+        case .shortBreak:
+            timeRemaining = shortBreakDuration
+            startTicking()
+        case .longBreak:
+            timeRemaining = longBreakDuration
+            startTicking()
+        case .completed, .idle:
+            timerTask?.cancel()
+            timerTask = nil
+        }
+    }
+
+    private func startTicking() {
+        timerTask?.cancel()
+        timerTask = Task { [weak self] in
+            guard let self else { return }
+            while !Task.isCancelled {
+                do {
+                    try await clock.sleep(for: .seconds(1))
+                } catch {
+                    return // Task cancelled
+                }
+                guard !Task.isCancelled else { return }
+                tick()
+            }
+        }
+    }
+
+    private func tick() {
+        guard timeRemaining > 0 else { return }
+
+        timeRemaining -= 1
+
+        if timerState == .focusing {
+            totalFocusSecondsAccumulated += 1
+        }
+
+        if timeRemaining <= 0 {
+            handlePhaseCompletion()
+        }
+    }
+
+    private func handlePhaseCompletion() {
+        switch timerState {
+        case .focusing:
+            if currentSession >= sessionsBeforeLongBreak {
+                transitionTo(.longBreak)
+            } else {
+                transitionTo(.shortBreak)
+            }
+        case .shortBreak:
+            currentSession += 1
+            transitionTo(.focusing)
+        case .longBreak:
+            timerState = .completed
+            timerTask?.cancel()
+            timerTask = nil
+        case .idle, .completed:
+            break
+        }
+    }
 }
