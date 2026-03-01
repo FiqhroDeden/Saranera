@@ -38,7 +38,7 @@ struct ActiveSoundsView: View {
 
 #Preview {
     ZStack {
-        Color(red: 0.051, green: 0.106, blue: 0.165).ignoresSafeArea()
+        Color.deepNavy.ignoresSafeArea()
         ActiveSoundsView()
             .environment(AudioManager(audioEnabled: false))
     }

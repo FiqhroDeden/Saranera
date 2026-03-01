@@ -28,13 +28,13 @@ struct SoundPickerView: View {
                 }
                 .padding(.vertical)
             }
-            .background(Color(red: 0.051, green: 0.106, blue: 0.165).ignoresSafeArea())
+            .background(Color.deepNavy.ignoresSafeArea())
             .navigationTitle("Sounds")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
-                        .foregroundStyle(Color(red: 0.357, green: 0.608, blue: 0.835))
+                        .foregroundStyle(Color.softBlue)
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)

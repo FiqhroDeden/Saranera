@@ -10,11 +10,11 @@ struct TimerRingView: View {
     private var ringColor: Color {
         switch timerState {
         case .focusing:
-            Color(red: 0.357, green: 0.608, blue: 0.835) // Soft Blue
+            Color.softBlue // Soft Blue
         case .shortBreak, .longBreak:
-            Color(red: 0.957, green: 0.635, blue: 0.380) // Amber
+            Color.warmAmber // Amber
         case .idle, .completed:
-            Color(red: 0.357, green: 0.608, blue: 0.835)
+            Color.softBlue
         }
     }
 
@@ -70,7 +70,7 @@ struct TimerRingView: View {
 
 #Preview {
     ZStack {
-        Color(red: 0.051, green: 0.106, blue: 0.165).ignoresSafeArea()
+        Color.deepNavy.ignoresSafeArea()
         TimerRingView(
             progress: 0.65,
             formattedTime: "16:15",

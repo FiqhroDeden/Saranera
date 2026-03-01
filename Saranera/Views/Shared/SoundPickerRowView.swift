@@ -17,7 +17,7 @@ struct SoundPickerRowView: View {
                     Image(systemName: sound.iconName)
                         .font(.system(.title3, design: .rounded))
                         .foregroundStyle(isActive
-                            ? Color(red: 0.957, green: 0.635, blue: 0.380)
+                            ? Color.warmAmber
                             : .white.opacity(0.7))
                         .frame(width: 32)
 
@@ -35,7 +35,7 @@ struct SoundPickerRowView: View {
 
                     if isActive {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(Color(red: 0.357, green: 0.608, blue: 0.835))
+                            .foregroundStyle(Color.softBlue)
                     }
                 }
                 .padding(.horizontal)
@@ -57,7 +57,7 @@ struct SoundPickerRowView: View {
                         ),
                         in: 0...1
                     )
-                    .tint(Color(red: 0.357, green: 0.608, blue: 0.835))
+                    .tint(Color.softBlue)
 
                     Image(systemName: "speaker.wave.3.fill")
                         .font(.caption2)
@@ -68,11 +68,12 @@ struct SoundPickerRowView: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
-            isActive
-                ? Color.white.opacity(0.05)
-                : Color.clear
-        )
+        .background {
+            if isActive {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(.ultraThinMaterial)
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal)
         .animation(.spring(duration: 0.3), value: isActive)
@@ -81,7 +82,7 @@ struct SoundPickerRowView: View {
 
 #Preview {
     ZStack {
-        Color(red: 0.051, green: 0.106, blue: 0.165).ignoresSafeArea()
+        Color.deepNavy.ignoresSafeArea()
         VStack {
             SoundPickerRowView(sound: Sound.catalog[0])
             SoundPickerRowView(sound: Sound.catalog[1])
