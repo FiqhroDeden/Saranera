@@ -1,24 +1,24 @@
-//
-//  ContentView.swift
-//  Saranera
-//
-//  Created by ZoldyckD on 01/03/26.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            Tab("Focus", systemImage: "brain.head.profile") {
+                FocusView()
+            }
+
+            Tab("Sleep", systemImage: "moon.stars") {
+                SleepView()
+            }
+
+            Tab("Library", systemImage: "square.grid.2x2") {
+                LibraryView()
+            }
         }
-        .padding()
     }
 }
 
 #Preview {
     ContentView()
+        .environment(AudioManager.shared)
 }
