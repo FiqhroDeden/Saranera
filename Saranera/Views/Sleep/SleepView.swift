@@ -5,6 +5,7 @@ struct SleepView: View {
     @Environment(AudioManager.self) private var audioManager
     @State private var viewModel = SleepViewModel()
     @State private var showSoundPicker = false
+    @State private var recommendationManager = RecommendationManager()
 
     // Auto-dim
     @State private var lastInteractionDate = Date()
@@ -54,6 +55,7 @@ struct SleepView: View {
             .animation(.spring(duration: 1.0), value: isDimmed)
         }
         .animation(.spring(duration: 0.5), value: viewModel.timerState)
+        .onAppear { recommendationManager.checkAvailability() }
         .contentShape(Rectangle())
         .onTapGesture { handleTap() }
         .sheet(isPresented: $showSoundPicker) {
@@ -74,6 +76,15 @@ struct SleepView: View {
             Image(systemName: "moon.stars")
                 .font(.system(size: 48, weight: .light))
                 .foregroundStyle(Color.warmAmber.opacity(0.7))
+
+            RecommendationView(
+                manager: recommendationManager,
+                mode: .sleep,
+                availableSounds: Sound.catalog.filter { !$0.isPremium },
+                onApply: { recommendation in
+                    applySleepRecommendation(recommendation)
+                }
+            )
 
             durationPicker
 
@@ -177,6 +188,18 @@ struct SleepView: View {
             }
             .buttonStyle(.glass)
         }
+    }
+
+    private func applySleepRecommendation(_ recommendation: SoundRecommendation) {
+        audioManager.stopAll()
+        for suggestion in recommendation.sounds {
+            if let sound = Sound.catalog.first(where: { $0.id == suggestion.soundId }) {
+                audioManager.play(sound: sound)
+                audioManager.setVolume(for: sound, to: Float(suggestion.volume) / 100.0)
+            }
+        }
+        viewModel.selectedDuration = TimeInterval(recommendation.timerMinutes * 60)
+        viewModel.selectedFadeOut = TimeInterval(recommendation.fadeOutMinutes * 60)
     }
 
     // MARK: - Active View (Playing / Fading)
