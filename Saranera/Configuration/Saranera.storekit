@@ -1,0 +1,106 @@
+{
+  "identifier" : "C47C1B18",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "rainy_day_001",
+      "localizations" : [
+        {
+          "description" : "Atmospheric rain sounds for deep relaxation",
+          "displayName" : "Rainy Day Collection",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "app.fiqhrodedhen.Saranera.pack.rainy_day",
+      "referenceName" : "Rainy Day Collection",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "ocean_dreams_001",
+      "localizations" : [
+        {
+          "description" : "Immersive ocean and coastal soundscapes",
+          "displayName" : "Ocean Dreams",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "app.fiqhrodedhen.Saranera.pack.ocean_dreams",
+      "referenceName" : "Ocean Dreams",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "lofi_study_001",
+      "localizations" : [
+        {
+          "description" : "Chill beats and study ambience",
+          "displayName" : "Lo-Fi Study",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "app.fiqhrodedhen.Saranera.pack.lofi_study",
+      "referenceName" : "Lo-Fi Study",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : false,
+      "internalID" : "nusantara_001",
+      "localizations" : [
+        {
+          "description" : "Traditional Indonesian soundscapes",
+          "displayName" : "Nusantara",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "app.fiqhrodedhen.Saranera.pack.nusantara",
+      "referenceName" : "Nusantara",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "city_nights_001",
+      "localizations" : [
+        {
+          "description" : "Urban nighttime atmosphere",
+          "displayName" : "City Nights",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "app.fiqhrodedhen.Saranera.pack.city_nights",
+      "referenceName" : "City Nights",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "7.99",
+      "familyShareable" : false,
+      "internalID" : "bundle_all_001",
+      "localizations" : [
+        {
+          "description" : "All 5 sound packs at a 40% discount",
+          "displayName" : "Bundle All Access",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "app.fiqhrodedhen.Saranera.pack.bundle_all",
+      "referenceName" : "Bundle All Access",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "app_001",
+    "_developerTeamID" : "C588LMCKSL",
+    "_lastSynchronizedDate" : 0
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
