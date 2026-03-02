@@ -3,6 +3,8 @@ import SwiftUI
 
 struct SleepView: View {
     @Environment(AudioManager.self) private var audioManager
+    @Environment(StoreManager.self) private var storeManager
+    @Environment(DownloadManager.self) private var downloadManager
     @State private var viewModel = SleepViewModel()
     @State private var showSoundPicker = false
     @State private var recommendationManager = RecommendationManager()
@@ -10,6 +12,14 @@ struct SleepView: View {
     // Auto-dim
     @State private var lastInteractionDate = Date()
     @State private var isDimmed = false
+
+    private var availableSoundsForRecommendation: [Sound] {
+        Sound.catalog.filter { sound in
+            if sound.isFree { return true }
+            guard let packID = sound.packID else { return false }
+            return storeManager.isSoundAvailable(sound.id) && downloadManager.isDownloaded(packID)
+        }
+    }
 
     // Duration presets in minutes
     private let durationPresets: [Int] = [15, 30, 45, 60, 90]
@@ -80,7 +90,7 @@ struct SleepView: View {
             RecommendationView(
                 manager: recommendationManager,
                 mode: .sleep,
-                availableSounds: Sound.catalog.filter { !$0.isPremium },
+                availableSounds: availableSoundsForRecommendation,
                 onApply: { recommendation in
                     applySleepRecommendation(recommendation)
                 }

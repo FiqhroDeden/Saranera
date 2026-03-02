@@ -3,10 +3,20 @@ import SwiftUI
 
 struct FocusView: View {
     @Environment(AudioManager.self) private var audioManager
+    @Environment(StoreManager.self) private var storeManager
+    @Environment(DownloadManager.self) private var downloadManager
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = FocusViewModel()
     @State private var showSoundPicker = false
     @State private var recommendationManager = RecommendationManager()
+
+    private var availableSoundsForRecommendation: [Sound] {
+        Sound.catalog.filter { sound in
+            if sound.isFree { return true }
+            guard let packID = sound.packID else { return false }
+            return storeManager.isSoundAvailable(sound.id) && downloadManager.isDownloaded(packID)
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -77,7 +87,7 @@ struct FocusView: View {
             RecommendationView(
                 manager: recommendationManager,
                 mode: .focus,
-                availableSounds: Sound.catalog.filter { !$0.isPremium },
+                availableSounds: availableSoundsForRecommendation,
                 onApply: { recommendation in
                     applyRecommendation(recommendation)
                 }
