@@ -54,7 +54,7 @@ final class SleepViewModel {
     }
 
     var timerProgress: Double {
-        guard selectedDuration > 0 else { return 0 }
+        guard selectedDuration > 0, isActive else { return 0 }
         return 1.0 - (timeRemaining / selectedDuration)
     }
 
