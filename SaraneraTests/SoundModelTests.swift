@@ -20,12 +20,15 @@ struct SoundModelTests {
     // MARK: - Sound Catalog
 
     @Test func catalogHas12FreeSounds() {
-        #expect(Sound.catalog.count == 12)
+        #expect(Sound.freeSounds.count == 12)
     }
 
-    @Test func catalogHasNoPremiuimSounds() {
-        let premiumSounds = Sound.catalog.filter { $0.isPremium }
-        #expect(premiumSounds.isEmpty)
+    @Test func catalogHasPremiumSounds() {
+        #expect(Sound.premiumSounds.count == 20)
+    }
+
+    @Test func catalogTotalIs32Sounds() {
+        #expect(Sound.catalog.count == 32)
     }
 
     @Test func catalogCoversAllCategories() {
@@ -46,14 +49,35 @@ struct SoundModelTests {
         #expect(rain?.iconName == "cloud.rain")
     }
 
+    @Test func freeSoundsHaveNilPackID() {
+        for sound in Sound.freeSounds {
+            #expect(sound.packID == nil)
+            #expect(sound.isFree == true)
+        }
+    }
+
+    @Test func premiumSoundsHavePackID() {
+        for sound in Sound.premiumSounds {
+            #expect(sound.packID != nil)
+            #expect(sound.isFree == false)
+            #expect(sound.isPremium == true)
+        }
+    }
+
+    @Test func premiumSoundsHavePreviewFileName() {
+        for sound in Sound.premiumSounds {
+            #expect(sound.previewFileName != nil)
+        }
+    }
+
     // MARK: - Sound Grouping
 
     @Test func soundsGroupByCategory() {
         let grouped = Sound.grouped
-        #expect(grouped[.nature]?.count == 4)
-        #expect(grouped[.ambient]?.count == 3)
-        #expect(grouped[.environment]?.count == 3)
-        #expect(grouped[.urban]?.count == 2)
+        #expect(grouped[.nature]?.count == 12)
+        #expect(grouped[.ambient]?.count == 7)
+        #expect(grouped[.environment]?.count == 7)
+        #expect(grouped[.urban]?.count == 6)
     }
 
     // MARK: - SoundMix
@@ -69,5 +93,42 @@ struct SoundModelTests {
         #expect(mix.name == "Rainy Cafe")
         #expect(mix.components.count == 2)
         #expect(mix.isFavorite == false)
+    }
+
+    // MARK: - SoundPack Catalog
+
+    @Test func soundPackCatalogHasFivePacks() {
+        #expect(SoundPack.catalog.count == 5)
+    }
+
+    @Test func soundPacksHaveUniqueIDs() {
+        let ids = SoundPack.catalog.map(\.id)
+        #expect(Set(ids).count == ids.count)
+    }
+
+    @Test func soundPackSoundsExistInCatalog() {
+        let allSoundIDs = Set(Sound.catalog.map(\.id))
+        for pack in SoundPack.catalog {
+            for soundID in pack.soundIDs {
+                #expect(allSoundIDs.contains(soundID), "Sound '\(soundID)' from pack '\(pack.id)' not found in Sound.catalog")
+            }
+        }
+    }
+
+    @Test func soundPackLookupBySoundID() {
+        let pack = SoundPack.pack(for: "drizzle")
+        #expect(pack != nil)
+        #expect(pack?.id == "app.fiqhrodedhen.Saranera.pack.rainy_day")
+    }
+
+    @Test func soundPackLookupReturnsNilForFreeSound() {
+        let pack = SoundPack.pack(for: "rain")
+        #expect(pack == nil)
+    }
+
+    @Test func eachPackHasFourSounds() {
+        for pack in SoundPack.catalog {
+            #expect(pack.soundIDs.count == 4, "Pack '\(pack.id)' should have 4 sounds but has \(pack.soundIDs.count)")
+        }
     }
 }

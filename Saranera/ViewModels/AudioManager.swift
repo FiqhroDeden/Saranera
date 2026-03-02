@@ -29,6 +29,7 @@ final class AudioManager {
     // MARK: - Frequency mapping for test tones
 
     private static let frequencyMap: [String: Float] = [
+        // Free sounds
         "rain": 261.63,         // C4
         "thunder": 293.66,      // D4
         "forest": 329.63,       // E4
@@ -41,6 +42,31 @@ final class AudioManager {
         "night_crickets": 659.25, // E5
         "coffee_shop": 698.46,  // F5
         "library_ambience": 783.99, // G5
+        // Premium — Rainy Day Collection
+        "drizzle": 830.61,
+        "thunderstorm": 880.00,
+        "rain_tin_roof": 932.33,
+        "rain_tent": 987.77,
+        // Premium — Ocean Dreams
+        "beach_waves": 1046.50,
+        "underwater": 1108.73,
+        "harbor": 1174.66,
+        "seagulls": 1244.51,
+        // Premium — Lo-Fi Study
+        "lofi_beats": 1318.51,
+        "vinyl_crackle": 1396.91,
+        "keyboard_typing": 1479.98,
+        "pen_writing": 1567.98,
+        // Premium — Nusantara
+        "gamelan": 1661.22,
+        "rice_paddies": 1760.00,
+        "jungle_river": 1864.66,
+        "traditional_market": 1975.53,
+        // Premium — City Nights
+        "distant_traffic": 2093.00,
+        "train_passing": 2217.46,
+        "apartment_window": 2349.32,
+        "late_night_diner": 2489.02,
     ]
 
     // MARK: - Init
