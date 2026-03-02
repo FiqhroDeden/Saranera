@@ -6,6 +6,7 @@ struct FocusView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = FocusViewModel()
     @State private var showSoundPicker = false
+    @State private var recommendationManager = RecommendationManager()
 
     var body: some View {
         ZStack {
@@ -62,6 +63,7 @@ struct FocusView: View {
             handleStateChange(from: oldState, to: newState)
         }
         .onAppear { viewModel.loadTodayStats(from: modelContext) }
+        .onAppear { recommendationManager.checkAvailability() }
     }
 
     // MARK: - Idle View
@@ -71,6 +73,15 @@ struct FocusView: View {
             Image(systemName: "brain.head.profile")
                 .font(.system(size: 48, weight: .light))
                 .foregroundStyle(Color.softBlue)
+
+            RecommendationView(
+                manager: recommendationManager,
+                mode: .focus,
+                availableSounds: Sound.catalog.filter { !$0.isPremium },
+                onApply: { recommendation in
+                    applyRecommendation(recommendation)
+                }
+            )
 
             Button {
                 viewModel.startPomodoro()
@@ -174,6 +185,19 @@ struct FocusView: View {
         }
         .animation(.spring(duration: 0.3), value: viewModel.isTimerActive)
         .animation(.spring(duration: 0.3), value: viewModel.isPaused)
+    }
+
+    // MARK: - Apply Recommendation
+
+    private func applyRecommendation(_ recommendation: SoundRecommendation) {
+        audioManager.stopAll()
+        for suggestion in recommendation.sounds {
+            if let sound = Sound.catalog.first(where: { $0.id == suggestion.soundId }) {
+                audioManager.play(sound: sound)
+                audioManager.setVolume(for: sound, to: Float(suggestion.volume) / 100.0)
+            }
+        }
+        viewModel.focusDuration = TimeInterval(recommendation.timerMinutes * 60)
     }
 
     // MARK: - State Change Handler
