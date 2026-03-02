@@ -45,4 +45,5 @@ struct SoundPickerView: View {
 #Preview {
     SoundPickerView()
         .environment(AudioManager(audioEnabled: false))
+        .environment(StoreManager())
 }

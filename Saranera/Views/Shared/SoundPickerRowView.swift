@@ -3,37 +3,50 @@ import SwiftUI
 struct SoundPickerRowView: View {
     let sound: Sound
     @Environment(AudioManager.self) private var audioManager
+    @Environment(StoreManager.self) private var storeManager
 
     private var isActive: Bool {
         audioManager.isActive(sound)
     }
 
+    private var isLocked: Bool {
+        sound.isPremium && !storeManager.isSoundAvailable(sound.id)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Button {
-                audioManager.play(sound: sound)
+                if !isLocked {
+                    audioManager.play(sound: sound)
+                }
             } label: {
                 HStack(spacing: 12) {
                     Image(systemName: sound.iconName)
                         .font(.system(.title3, design: .rounded))
                         .foregroundStyle(isActive
                             ? Color.warmAmber
-                            : .white.opacity(0.7))
+                            : isLocked ? .white.opacity(0.3) : .white.opacity(0.7))
                         .frame(width: 32)
 
-                    Text(sound.name)
-                        .font(.system(.body, design: .rounded))
-                        .foregroundStyle(.white)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(sound.name)
+                            .font(.system(.body, design: .rounded))
+                            .foregroundStyle(isLocked ? .white.opacity(0.5) : .white)
+
+                        if isLocked, let pack = SoundPack.pack(for: sound.id) {
+                            Text(pack.name)
+                                .font(.system(.caption2, design: .rounded))
+                                .foregroundStyle(Color.softBlue.opacity(0.6))
+                        }
+                    }
 
                     Spacer()
 
-                    if sound.isPremium {
+                    if isLocked {
                         Image(systemName: "lock.fill")
                             .font(.system(.caption, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.4))
-                    }
-
-                    if isActive {
+                            .foregroundStyle(.white.opacity(0.3))
+                    } else if isActive {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundStyle(Color.softBlue)
                     }
@@ -41,7 +54,7 @@ struct SoundPickerRowView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
             }
-            .disabled(sound.isPremium)
+            .disabled(isLocked)
 
             // Volume slider for active sounds
             if isActive {
@@ -88,5 +101,6 @@ struct SoundPickerRowView: View {
             SoundPickerRowView(sound: Sound.catalog[1])
         }
         .environment(AudioManager(audioEnabled: false))
+        .environment(StoreManager())
     }
 }
