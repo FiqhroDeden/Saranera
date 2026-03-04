@@ -74,8 +74,6 @@ final class AudioManager {
     init(audioEnabled: Bool = true) {
         self.audioEnabled = audioEnabled
         if audioEnabled {
-            engine = AVAudioEngine()
-            configureAudioSession()
             observeInterruptions()
         }
     }
@@ -97,19 +95,48 @@ final class AudioManager {
         activeSoundIDs.insert(sound.id)
         volumes[sound.id] = 1.0
 
-        guard audioEnabled, let engine else { return }
+        guard audioEnabled else { return }
 
         do {
-            try startEngineIfNeeded()
+            // Ensure audio session is active and has an output route
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, options: .mixWithOthers)
+            try session.setActive(true)
 
+            guard !session.currentRoute.outputs.isEmpty else {
+                print("AudioManager: No audio output route available")
+                return
+            }
+
+            // Create engine lazily — after audio session is confirmed active
+            if engine == nil {
+                engine = AVAudioEngine()
+            }
+            guard let engine else { return }
+
+            // Load audio file or fall back to test tone
+            let buffer: AVAudioPCMBuffer
+            let format: AVAudioFormat
+
+            if let fileBuffer = loadAudioFile(for: sound) {
+                buffer = fileBuffer
+                format = fileBuffer.format
+            } else {
+                format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 2)!
+                buffer = generateTestToneBuffer(frequency: Self.frequencyMap[sound.id] ?? 440.0, duration: 2.0, format: format)
+                print("AudioManager: No audio file for '\(sound.id)', using test tone")
+            }
+
+            // Apple-recommended order: attach → connect → start → schedule → play
             let node = AVAudioPlayerNode()
             engine.attach(node)
-
-            let format = engine.mainMixerNode.outputFormat(forBus: 0)
             engine.connect(node, to: engine.mainMixerNode, format: format)
 
-            let frequency = Self.frequencyMap[sound.id] ?? 440.0
-            let buffer = generateTestToneBuffer(frequency: frequency, duration: 2.0, format: format)
+            if !isEngineRunning {
+                engine.prepare()
+                try engine.start()
+                isEngineRunning = true
+            }
 
             node.scheduleBuffer(buffer, at: nil, options: .loops)
             node.volume = 1.0
@@ -119,6 +146,8 @@ final class AudioManager {
             buffers[sound.id] = buffer
         } catch {
             print("AudioManager: Failed to play sound \(sound.id): \(error)")
+            activeSoundIDs.remove(sound.id)
+            volumes.removeValue(forKey: sound.id)
         }
     }
 
@@ -181,24 +210,12 @@ final class AudioManager {
         activeSoundIDs.contains(sound.id)
     }
 
-    // MARK: - Audio Session
-
-    private func configureAudioSession() {
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, options: .mixWithOthers)
-            try session.setActive(true)
-        } catch {
-            print("AudioManager: Failed to configure audio session: \(error)")
-        }
-    }
-
     // MARK: - Engine
 
-    private func startEngineIfNeeded() throws {
-        guard !isEngineRunning, let engine else { return }
-        try engine.start()
-        isEngineRunning = true
+    private func recreateEngine() {
+        engine?.stop()
+        engine = nil
+        isEngineRunning = false
     }
 
     // MARK: - Interruption Handling
@@ -228,6 +245,8 @@ final class AudioManager {
             let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
             if options.contains(.shouldResume) {
                 do {
+                    let session = AVAudioSession.sharedInstance()
+                    try session.setActive(true)
                     try engine?.start()
                     isEngineRunning = true
                     for id in activeSoundIDs {
@@ -242,6 +261,30 @@ final class AudioManager {
             }
         @unknown default:
             break
+        }
+    }
+
+    // MARK: - Audio File Loading
+
+    private func loadAudioFile(for sound: Sound) -> AVAudioPCMBuffer? {
+        let baseName = sound.fileName.replacingOccurrences(of: ".m4a", with: "")
+
+        // Try bundle first (free sounds + dev assets)
+        guard let url = Bundle.main.url(forResource: baseName, withExtension: "m4a") else {
+            return nil
+        }
+
+        do {
+            let file = try AVAudioFile(forReading: url)
+            let frameCount = AVAudioFrameCount(file.length)
+            guard let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: frameCount) else {
+                return nil
+            }
+            try file.read(into: buffer)
+            return buffer
+        } catch {
+            print("AudioManager: Failed to load file \(sound.fileName): \(error)")
+            return nil
         }
     }
 
